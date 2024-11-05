@@ -47,6 +47,8 @@ public class CommentService implements ICommentService {
 
     @Override
     public void deleteComment(Long id) {
+        Comment existingComment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with ID: " + id));
         commentRepository.deleteById(id);
     }
 

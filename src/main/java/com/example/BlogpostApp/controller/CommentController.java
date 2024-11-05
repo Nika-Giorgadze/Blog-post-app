@@ -1,7 +1,7 @@
 package com.example.BlogpostApp.controller;
 
+import com.example.BlogpostApp.exceptions.ResourceNotFoundException;
 import com.example.BlogpostApp.model.Comment;
-import com.example.BlogpostApp.model.Post;
 import com.example.BlogpostApp.service.ICommentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +32,15 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
-        commentService.deleteComment(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<String> deleteComment(@PathVariable Long id) {
+        try {
+            commentService.deleteComment(id);
+            return new ResponseEntity<>("Comment deleted successfully", HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>("Comment not found.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred while deleting the comment.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/post/{postId}")
