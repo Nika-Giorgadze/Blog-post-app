@@ -2,6 +2,7 @@ package com.example.BlogpostApp.controller;
 
 import com.example.BlogpostApp.model.Post;
 import com.example.BlogpostApp.model.User;
+import com.example.BlogpostApp.responses.PostResponse;
 import com.example.BlogpostApp.service.IPOstService;
 import com.example.BlogpostApp.service.IUserService;
 import org.springframework.data.domain.Page;
@@ -59,7 +60,7 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<Post> createPost(@RequestParam long userId, @RequestBody Post post) {
+    public ResponseEntity<PostResponse> createPost(@RequestParam long userId, @RequestBody Post post) {
         Optional<User> user = userService.getUserById(userId);
 
         if (!user.isPresent()) {
@@ -70,7 +71,10 @@ public class PostController {
             post.setUser(user.get());
             Post createdPost = postService.createPost(post);
 
-            return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
+            // Create a custom response with userId
+            PostResponse postResponse = new PostResponse(createdPost.getId(), createdPost.getText(), createdPost.getUser().getId());
+
+            return new ResponseEntity<>(postResponse, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
