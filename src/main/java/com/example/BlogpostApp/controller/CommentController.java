@@ -2,6 +2,7 @@ package com.example.BlogpostApp.controller;
 
 import com.example.BlogpostApp.exceptions.ResourceNotFoundException;
 import com.example.BlogpostApp.model.Comment;
+import com.example.BlogpostApp.responses.CommentResponse;
 import com.example.BlogpostApp.service.ICommentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +21,34 @@ public class CommentController {
     }
 
     @PostMapping("/post/{postId}/user/{userId}")
-    public ResponseEntity<Comment> createComment(@PathVariable Long postId, @PathVariable Long userId, @RequestBody Comment comment) {
+    public ResponseEntity<CommentResponse> createComment(@PathVariable Long postId, @PathVariable Long userId, @RequestBody Comment comment) {
         Comment createdComment = commentService.createComment(postId, userId, comment);
-        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
+
+        CommentResponse commentResponse = new CommentResponse(
+                createdComment.getId(),
+                createdComment.getText(),
+                createdComment.getPost().getId(),
+                createdComment.getUser().getId()
+        );
+
+        return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<Comment> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
+    public ResponseEntity<CommentResponse> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
         Comment updatedComment = commentService.updateComment(id, comment);
-        return new ResponseEntity<>(updatedComment, HttpStatus.OK);
+
+        CommentResponse commentResponse = new CommentResponse(
+                updatedComment.getId(),
+                updatedComment.getText(),
+                updatedComment.getPost().getId(),
+                updatedComment.getUser().getId()
+        );
+
+        return new ResponseEntity<>(commentResponse, HttpStatus.OK);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteComment(@PathVariable Long id) {

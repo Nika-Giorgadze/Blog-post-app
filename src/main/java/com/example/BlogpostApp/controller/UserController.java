@@ -1,7 +1,7 @@
 package com.example.BlogpostApp.controller;
 
-import com.example.BlogpostApp.model.ApiResponse;
 import com.example.BlogpostApp.model.User;
+import com.example.BlogpostApp.responses.CreateUserResponse;
 import com.example.BlogpostApp.service.IUserService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1")
 public class UserController {
-
     private IUserService userService;
 
     public UserController(IUserService userService) {
@@ -27,22 +26,22 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<ApiResponse> createUser(@RequestBody User user) {
+    public ResponseEntity<CreateUserResponse> createUser(@RequestBody User user) {
         try {
             boolean created = userService.createUser(user);
             if (created) {
                 return ResponseEntity.status(HttpStatus.CREATED)
-                        .body(new ApiResponse("User created successfully", true));
+                        .body(new CreateUserResponse("User created successfully"));
             } else {
                 return ResponseEntity.badRequest()
-                        .body(new ApiResponse("User creation failed", false));
+                        .body(new CreateUserResponse("User creation failed"));
             }
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new ApiResponse("Username already exists.", false));
+                    .body(new CreateUserResponse("Username already exists."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse("An error occurred while creating the user.", false));
+                    .body(new CreateUserResponse("An error occurred while creating the user."));
         }
     }
 
