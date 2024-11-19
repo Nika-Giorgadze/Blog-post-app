@@ -2,34 +2,39 @@ package com.example.BlogpostApp.service;
 
 import com.example.BlogpostApp.model.User;
 import com.example.BlogpostApp.repository.IUserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService implements IUserService {
 
-    private IUserRepository iUserRepository;
+    @Autowired
+    private IUserRepository userRepository;
 
-    public UserService(IUserRepository IUserRepository) {
-        this.iUserRepository = IUserRepository;
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     @Override
-    public List<User> getUsers() {
-        return iUserRepository.getUsers();
+    public User createUser(User user) {
+        return userRepository.save(user);
     }
 
     @Override
-    public Optional<User> getUserById(long id) {
-        return iUserRepository.getUserById(id);
+    public User updateUser(Long id, User user) {
+        if (userRepository.existsById(id)) {
+            user.setId(id);
+            return userRepository.save(user);
+        }
+        throw new EntityNotFoundException("User not found");
     }
 
     @Override
-    public boolean createUser(User user) {
-        iUserRepository.save(user);
-
-        return true;
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 }

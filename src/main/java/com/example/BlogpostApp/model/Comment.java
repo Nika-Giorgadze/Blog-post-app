@@ -1,21 +1,24 @@
 package com.example.BlogpostApp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "comments")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Comment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Comment text cannot be blank")
+    @Size(min = 2, max = 128, message = "Comment text must be between 2 to 128 characters")
     private String text;
 
     @ManyToOne
@@ -24,5 +27,5 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User author;
 }

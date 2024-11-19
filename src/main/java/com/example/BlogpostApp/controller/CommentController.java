@@ -1,70 +1,48 @@
 package com.example.BlogpostApp.controller;
 
-import com.example.BlogpostApp.exceptions.ResourceNotFoundException;
+import com.example.BlogpostApp.dto.CommentDTO;
 import com.example.BlogpostApp.model.Comment;
-import com.example.BlogpostApp.responses.CommentResponse;
 import com.example.BlogpostApp.service.ICommentService;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/v1/comments")
+@RequestMapping("/api/comments")
 public class CommentController {
 
     private final ICommentService commentService;
 
+    @Autowired
     public CommentController(ICommentService commentService) {
         this.commentService = commentService;
     }
 
     @PostMapping("/post/{postId}/user/{userId}")
-    public ResponseEntity<CommentResponse> createComment(@PathVariable Long postId, @PathVariable Long userId, @RequestBody Comment comment) {
+    public ResponseEntity<Comment> createComment(@PathVariable Long postId, @PathVariable Long userId, @RequestBody CommentDTO commentDTO) {
+        Comment comment = new Comment();
+        comment.setText(commentDTO.getContent());
         Comment createdComment = commentService.createComment(postId, userId, comment);
-
-        CommentResponse commentResponse = new CommentResponse(
-                createdComment.getId(),
-                createdComment.getText(),
-                createdComment.getPost().getId(),
-                createdComment.getUser().getId()
-        );
-
-        return new ResponseEntity<>(commentResponse, HttpStatus.CREATED);
+        return ResponseEntity.ok(createdComment);
     }
-
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponse> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
+    public ResponseEntity<Comment> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
         Comment updatedComment = commentService.updateComment(id, comment);
-
-        CommentResponse commentResponse = new CommentResponse(
-                updatedComment.getId(),
-                updatedComment.getText(),
-                updatedComment.getPost().getId(),
-                updatedComment.getUser().getId()
-        );
-
-        return new ResponseEntity<>(commentResponse, HttpStatus.OK);
+        return ResponseEntity.ok(updatedComment);
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteComment(@PathVariable Long id) {
-        try {
-            commentService.deleteComment(id);
-            return new ResponseEntity<>("Comment deleted successfully", HttpStatus.OK);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>("Comment not found.", HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>("An error occurred while deleting the comment.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
+        commentService.deleteComment(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId) {
-        List<Comment> comments = commentService.getCommentsByPostId(postId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
+    public ResponseEntity<Page<Comment>> getCommentsByPostId(@PathVariable Long postId, Pageable pageable) {
+        Page<Comment> comments = commentService.getCommentsByPostId(postId, pageable);
+        return ResponseEntity.ok(comments);
     }
 }

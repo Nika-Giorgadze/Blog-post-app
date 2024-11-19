@@ -2,58 +2,39 @@ package com.example.BlogpostApp.service;
 
 import com.example.BlogpostApp.model.Post;
 import com.example.BlogpostApp.repository.IPostRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
 public class PostService implements IPOstService {
 
-    private IPostRepository iPostRepository;
-
-    public PostService(IPostRepository postRepository) {
-        this.iPostRepository = postRepository;
-    }
-
-    @Override
-    public Page<Post> getPosts(Pageable pageable) {
-        return iPostRepository.findAll(pageable);
-    }
-
-    @Override
-    public Optional<Post> getPost(long id) {
-        return iPostRepository.findById(id);
-    }
+    @Autowired
+    private IPostRepository postRepository;
 
     @Override
     public Post createPost(Post post) {
-        return iPostRepository.save(post);
+        return postRepository.save(post);
     }
 
-    public boolean updatePost(long id, Post post) {
-        Optional<Post> existingPostOpt = iPostRepository.findById(id);
-        if (existingPostOpt.isPresent()) {
-            Post existingPost = existingPostOpt.get();
-            existingPost.setText(post.getText());
-            existingPost.setUser(post.getUser());
-            iPostRepository.save(existingPost);
-            return true;
+    @Override
+    public Post updatePost(Long id, Post post) {
+        if (postRepository.existsById(id)) {
+            post.setId(id);
+            return postRepository.save(post);
         }
-        return false;
+        throw new EntityNotFoundException("Post not found");
     }
 
     @Override
-    public boolean deletePost(long id) {
-        iPostRepository.deleteById(id);
-
-        return true;
+    public void deletePost(Long id) {
+        postRepository.deleteById(id);
     }
 
     @Override
-    public Page<Post> getPostsByUserId(long userId, Pageable pageable) {
-        return iPostRepository.findByUserId(userId, pageable);
+    public Page<Post> getAllPosts(Pageable pageable) {
+        return postRepository.findAll(pageable);
     }
 }
